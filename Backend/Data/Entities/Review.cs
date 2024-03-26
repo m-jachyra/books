@@ -1,6 +1,6 @@
 ﻿namespace Backend.Data.Entities
 {
-    public class Review : Entity
+    public class Review : User
     {
         public int Id { get; set; }
         public string Content { get; set; }

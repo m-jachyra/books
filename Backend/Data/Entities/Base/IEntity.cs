@@ -1,6 +1,6 @@
 ﻿namespace Backend.Data.Entities
 {
-    public class Entity
+    public interface IEntity
     {
         public int Id { get; set; }
     }

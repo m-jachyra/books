@@ -3,7 +3,7 @@ using Backend.Data.Entities;
 
 namespace Backend.Repositories
 {
-    public interface IRepositoryAsync<T> where T : Entity
+    public interface IRepositoryAsync<T> where T : class, IEntity
     {
         Task AddAsync(T entity);
         Task DeleteAsync(T entity);

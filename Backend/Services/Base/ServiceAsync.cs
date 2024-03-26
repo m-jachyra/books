@@ -7,7 +7,7 @@ using Backend.Repositories;
 namespace Backend.Services.Base
 {
     public class ServiceAsync<TEntity, TDto> : IServiceAsync<TEntity, TDto>
-        where TDto : EntityDto where TEntity : Entity
+        where TDto : EntityDto where TEntity : class, IEntity
     {
         private readonly IRepositoryAsync<TEntity> _repository;
         private readonly IMapper _mapper;

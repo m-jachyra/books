@@ -1,5 +1,6 @@
 using AutoMapper.Extensions.ExpressionMapping;
 using Backend.Data;
+using Backend.Data.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,10 @@ namespace Backend
                 options.UseNpgsql(
                     configuration.GetConnectionString("DefaultConnection"), 
                     x=>
-                        x.MigrationsHistoryTable("migrations", configuration["Schema:Books"])));
+                        x.MigrationsHistoryTable("migrations")));
+
+            builder.Services.AddDefaultIdentity<User>()
+                .AddEntityFrameworkStores<AppDbContext>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,

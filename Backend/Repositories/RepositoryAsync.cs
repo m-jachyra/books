@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories
 {
-    public class RepositoryAsync<T> : IRepositoryAsync<T> where T : Entity
+    public class RepositoryAsync<T> : IRepositoryAsync<T> where T : class, IEntity
     {
         private readonly AppDbContext _context;
         

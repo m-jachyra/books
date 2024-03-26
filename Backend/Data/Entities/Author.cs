@@ -1,6 +1,6 @@
 ﻿namespace Backend.Data.Entities
 {
-    public class Author : Entity
+    public class Author : IEntity
     {
         public int Id { get; set; }
         public string Name { get; set; }
