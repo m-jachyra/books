@@ -1,4 +1,5 @@
-﻿using Backend.Repositories;
+﻿using Backend.Auth;
+using Backend.Repositories;
 using Backend.Services.Base;
 
 namespace Backend
@@ -9,6 +10,8 @@ namespace Backend
         {
             services.AddTransient(typeof(IRepositoryAsync<>), typeof(RepositoryAsync<>));
             services.AddTransient(typeof(IServiceAsync<,>), typeof(ServiceAsync<,>));
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IJwtManager, JwtManager>();
 
             return services;
         }

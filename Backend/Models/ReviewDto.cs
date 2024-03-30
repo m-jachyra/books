@@ -6,8 +6,8 @@ namespace Backend.Models
 {
     public class ReviewDto : EntityDto, IMapFrom
     {
-        public bool IsPositive { get; set; }
-        public string Content { get; set; }
+        public required bool IsPositive { get; set; }
+        public required string Content { get; set; }
         
         public void Mapping(Profile profile)
         {

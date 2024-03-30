@@ -18,7 +18,7 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Biography = table.Column<string>(type: "text", nullable: false),
                     DateBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DateDeath = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -34,7 +34,7 @@ namespace Backend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -174,6 +174,28 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "user_refresh_token",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RefreshToken = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    DateCreatedUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DateExpireUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_refresh_token", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_user_refresh_token_user_UserId",
+                        column: x => x.UserId,
+                        principalTable: "user",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "user_role",
                 columns: table => new
                 {
@@ -221,7 +243,9 @@ namespace Backend.Migrations
                 name: "review",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
                     IsPositive = table.Column<bool>(type: "boolean", nullable: false),
                     BookId = table.Column<int>(type: "integer", nullable: false),
@@ -237,13 +261,31 @@ namespace Backend.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_review_user_Id",
-                        column: x => x.Id,
+                        name: "FK_review_user_UserId",
+                        column: x => x.UserId,
                         principalTable: "user",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_review_plus",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ReviewId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_review_plus", x => new { x.UserId, x.ReviewId });
                     table.ForeignKey(
-                        name: "FK_review_user_UserId",
+                        name: "FK_user_review_plus_review_ReviewId",
+                        column: x => x.ReviewId,
+                        principalTable: "review",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_user_review_plus_user_UserId",
                         column: x => x.UserId,
                         principalTable: "user",
                         principalColumn: "Id",
@@ -303,6 +345,16 @@ namespace Backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_user_refresh_token_UserId",
+                table: "user_refresh_token",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_review_plus_ReviewId",
+                table: "user_review_plus",
+                column: "ReviewId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_user_role_RoleId",
                 table: "user_role",
                 column: "RoleId");
@@ -311,9 +363,6 @@ namespace Backend.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "review");
-
             migrationBuilder.DropTable(
                 name: "role_claim");
 
@@ -324,16 +373,25 @@ namespace Backend.Migrations
                 name: "user_login");
 
             migrationBuilder.DropTable(
+                name: "user_refresh_token");
+
+            migrationBuilder.DropTable(
+                name: "user_review_plus");
+
+            migrationBuilder.DropTable(
                 name: "user_role");
 
             migrationBuilder.DropTable(
                 name: "user_token");
 
             migrationBuilder.DropTable(
-                name: "book");
+                name: "review");
 
             migrationBuilder.DropTable(
                 name: "role");
+
+            migrationBuilder.DropTable(
+                name: "book");
 
             migrationBuilder.DropTable(
                 name: "user");

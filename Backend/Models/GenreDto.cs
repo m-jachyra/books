@@ -8,7 +8,7 @@ namespace Backend.Models
 {
     public class GenreDto : EntityDto, IMapFrom
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         
         public void Mapping(Profile profile)
         {

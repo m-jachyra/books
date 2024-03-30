@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Backend.Helpers;
 
 namespace Backend.Services.Base
 {
@@ -6,7 +7,8 @@ namespace Backend.Services.Base
     {
         Task AddAsync(TDto tDto);
         Task DeleteAsync(int id);
-        IEnumerable<TDto> GetAll(Expression<Func<TDto, bool>>? expression = null);
+        Task<PagedList<TDto>> GetAsync(PagedListQuery<TEntity> request);
+        Task<PagedList<TDto>> GetAsync(Expression<Func<TDto, bool>>? expression, PagedListQuery<TEntity> request);
         Task<TDto> GetByIdAsync(int id);
         Task UpdateAsync(TDto tDto);
         Task<TDto> GetFirstAsync(Expression<Func<TDto, bool>> expression);

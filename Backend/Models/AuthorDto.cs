@@ -6,8 +6,8 @@ namespace Backend.Models
 {
     public class AuthorDto : EntityDto, IMapFrom
     {
-        public string Name { get; set; }
-        public string Biography { get; set; }
+        public required string Name { get; set; }
+        public required string Biography { get; set; }
         public DateTime? DateBirth { get; set; }
         public DateTime? DateDeath { get; set; }
         

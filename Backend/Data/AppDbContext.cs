@@ -15,6 +15,8 @@ namespace Backend.Data
         public DbSet<Book> Books { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<UserReviewPlus> UserReviewPluses { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,6 +26,8 @@ namespace Backend.Data
             modelBuilder.Entity<Book>().ToTable("book");
             modelBuilder.Entity<Genre>().ToTable("genre");
             modelBuilder.Entity<Review>().ToTable("review");
+            modelBuilder.Entity<UserReviewPlus>().ToTable("user_review_plus");
+            modelBuilder.Entity<UserRefreshToken>().ToTable("user_refresh_token");
             
             modelBuilder.Entity<User>(b =>
             {

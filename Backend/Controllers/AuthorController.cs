@@ -1,11 +1,14 @@
 ﻿using Backend.Data.Entities;
+using Backend.Helpers;
 using Backend.Models;
 using Backend.Services.Base;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class AuthorController : ControllerBase
     {
@@ -17,35 +20,40 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<AuthorDto>> Get(CancellationToken cancellationToken)
+        [AllowAnonymous]
+        public async Task<ActionResult<AuthorDto>> Get([FromQuery] PagedListQuery<Author> request)
         {
-            var result = _repository.GetAll();
+            var result = await _repository.GetAsync(request);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> Fetch(int id, CancellationToken cancellationToken)
+        [AllowAnonymous]
+        public async Task<ActionResult> Fetch(int id)
         {
             var result = await _repository.GetByIdAsync(id);
             return Ok(result);
         }
         
         [HttpPost]
-        public async Task<ActionResult> Add(AuthorDto model, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Add(AuthorDto model)
         {
             await _repository.AddAsync(model);
             return Ok();
         }
 
         [HttpPut]
-        public async Task<ActionResult> Update(AuthorDto model, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Update(AuthorDto model)
         {
             await _repository.UpdateAsync(model);
             return Ok();
         }
         
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id, CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> Delete(int id)
         {
             await _repository.DeleteAsync(id);
             return Ok();

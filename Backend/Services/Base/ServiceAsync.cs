@@ -1,13 +1,15 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Backend.Data.Entities;
+using Backend.Helpers;
 using Backend.Models.Base;
 using Backend.Repositories;
 
 namespace Backend.Services.Base
 {
     public class ServiceAsync<TEntity, TDto> : IServiceAsync<TEntity, TDto>
-        where TDto : EntityDto where TEntity : class, IEntity
+        where TDto : EntityDto where TEntity : class, IHasId, ISortable<TEntity>
     {
         private readonly IRepositoryAsync<TEntity> _repository;
         private readonly IMapper _mapper;
@@ -27,11 +29,33 @@ namespace Backend.Services.Base
         {
             await _repository.DeleteAsync(await _repository.GetByIdAsync(id));
         }
+        
+        public async Task<PagedList<TDto>> GetAsync(PagedListQuery<TEntity> request)
+        {
+            var query = _repository.GetAll();
+            
+            if (request.SortOrder?.ToLower() == "desc")
+                query = query.OrderByDescending(TEntity.GetSortProperty(request.SortColumn));
+            else
+                query = query.OrderBy(TEntity.GetSortProperty(request.SortColumn));
+            
+            var result = query.ProjectTo<TDto>(_mapper.ConfigurationProvider);
+            return await PagedList<TDto>.CreateAsync(result, request.Page, request.PageSize);
+        }
 
-        public IEnumerable<TDto> GetAll(Expression<Func<TDto, bool>>?expression = null)
+        public async Task<PagedList<TDto>> GetAsync(Expression<Func<TDto, bool>>?expression, PagedListQuery<TEntity> request)
         {
             var predicate = _mapper.Map<Expression<Func<TEntity, bool>>>(expression);
-            return _repository.GetAll(predicate).Select(_mapper.Map<TDto>).ToList();
+
+            var query = _repository.GetAll(predicate);
+            
+            if (request.SortOrder?.ToLower() == "desc")
+                query = query.OrderByDescending(TEntity.GetSortProperty(request.SortColumn));
+            else
+                query = query.OrderBy(TEntity.GetSortProperty(request.SortColumn));
+            
+            var result = query.ProjectTo<TDto>(_mapper.ConfigurationProvider);
+            return await PagedList<TDto>.CreateAsync(result, request.Page, request.PageSize);
         }
 
         public async Task<TDto> GetByIdAsync(int id)

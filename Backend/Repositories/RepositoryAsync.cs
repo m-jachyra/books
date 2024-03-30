@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories
 {
-    public class RepositoryAsync<T> : IRepositoryAsync<T> where T : class, IEntity
+    public class RepositoryAsync<T> : IRepositoryAsync<T> where T : class, IHasId
     {
         private readonly AppDbContext _context;
         
@@ -17,12 +17,13 @@ namespace Backend.Repositories
         public async Task AddAsync(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public Task DeleteAsync(T entity)
+        public async Task DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
-            return Task.CompletedTask;
+            await _context.SaveChangesAsync();
         }
 
         public IQueryable<T> GetAll(Expression<Func<T, bool>>? expression = null)
@@ -38,11 +39,11 @@ namespace Backend.Repositories
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public Task UpdateAsync(T entity)
+        public async Task UpdateAsync(T entity)
         {
             _context.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
-            return Task.CompletedTask;
+            await _context.SaveChangesAsync();
         }
 
         public async Task<T?> GetFirstAsync(Expression<Func<T, bool>> expression)

@@ -1,11 +1,13 @@
 ﻿using Backend.Data.Entities;
 using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class ReviewController : ControllerBase
     {
@@ -15,22 +17,9 @@ namespace Backend.Controllers
         {
             _reviewService = reviewService;
         }
-
-        [HttpGet]
-        public async Task<ActionResult<ReviewDto>> Get()
-        {
-            var result = _reviewService.GetAll();
-            return Ok(result);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult> Fetch(int id)
-        {
-            var result = await _reviewService.GetByIdAsync(id);
-            return Ok(result);
-        }
         
         [HttpGet("book/{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<ReviewDto>> GetBookReviews(int id, int pageIndex, int pageSize)
         {
             var result = await _reviewService.GetByBookId(id, pageIndex, pageSize);
@@ -52,6 +41,7 @@ namespace Backend.Controllers
         }
         
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             await _reviewService.DeleteAsync(id);
