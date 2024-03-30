@@ -10,6 +10,7 @@ namespace Backend.Data.Entities
         public string Title { get; set; }
         public string Content { get; set; }
         public bool IsPositive { get; set; }
+        public DateTime DateCreatedUtc { get; set; } = DateTime.UtcNow;
         
         public int BookId { get; set; }
         public Book Book { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Backend.Data.Entities;
+using Backend.Helpers;
 using Backend.Models;
 using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,9 +21,17 @@ namespace Backend.Controllers
         
         [HttpGet("book/{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<ReviewDto>> GetBookReviews(int id, int pageIndex, int pageSize)
+        public async Task<ActionResult<ReviewDto>> GetBookReviews([FromRoute] int id, [FromQuery] PagedListQuery<Review> request)
         {
-            var result = await _reviewService.GetByBookId(id, pageIndex, pageSize);
+            var result = await _reviewService.GetByBookId(id, request);
+            return Ok(result);
+        }
+        
+        [HttpGet("top")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ReviewDto>> GetTopReviews()
+        {
+            var result = await _reviewService.GetTopReviews();
             return Ok(result);
         }
         

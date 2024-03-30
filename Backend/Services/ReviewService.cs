@@ -1,8 +1,12 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Backend.Data.Entities;
+using Backend.Helpers;
 using Backend.Models;
 using Backend.Repositories;
 using Backend.Services.Base;
+using Elastic.Clients.Elasticsearch;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services
@@ -18,10 +22,23 @@ namespace Backend.Services
             _mapper = mapper;
         }
 
-
-        public async Task<ReviewDto> GetByBookId(int id, int pageIndex, int pageSize)
+        public async Task<List<ReviewDto>> GetTopReviews()
         {
-            return _mapper.Map<ReviewDto>(await _repository.Entities.Where(x => x.BookId == id).Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync());
+            var query = _repository.Entities.Include(x => x.UserReviewPluses);
+            
+            var result = await query
+                .OrderByDescending(x => x.UserReviewPluses.Count())
+                .ProjectTo<ReviewDto>(_mapper.ConfigurationProvider)
+                .Take(10)
+                .ToListAsync();
+            
+            return result;
+        }
+        public async Task<PagedList<ReviewDto>> GetByBookId(int id, PagedListQuery<Review> request)
+        {
+            var result = await GetAsync(review => review.BookId == id, request);
+
+            return result;
         }
     }
 }

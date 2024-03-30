@@ -1,5 +1,7 @@
 ﻿using Backend.Auth;
+using Backend.Models;
 using Backend.Repositories;
+using Backend.Services;
 using Backend.Services.Base;
 
 namespace Backend
@@ -10,6 +12,8 @@ namespace Backend
         {
             services.AddTransient(typeof(IRepositoryAsync<>), typeof(RepositoryAsync<>));
             services.AddTransient(typeof(IServiceAsync<,>), typeof(ServiceAsync<,>));
+            services.AddTransient<IBookService, BookService>();
+            services.AddTransient<IReviewService, ReviewService>();
             services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IJwtManager, JwtManager>();
 
