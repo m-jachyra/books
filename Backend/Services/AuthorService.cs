@@ -19,7 +19,7 @@ namespace Backend.Services
         public async Task UpdatePicturePath(PictureDto model)
         {
             var entity = await _repository.GetByIdAsync(model.Id);
-            entity.PicturePath = $"picture/author_{model.Id}";
+            entity.PicturePath = $"pictures/author_{model.Id}.jpg";
             await _repository.UpdateAsync(entity);
         }
     }

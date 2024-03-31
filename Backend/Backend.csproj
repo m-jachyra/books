@@ -32,10 +32,4 @@
       </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Update="Services\BookService.cs">
-        <DependentUpon>ReviewService.cs</DependentUpon>
-      </Compile>
-    </ItemGroup>
-
 </Project>
