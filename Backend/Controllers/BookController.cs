@@ -3,6 +3,7 @@ using Backend.Helpers;
 using Backend.Models;
 using Backend.Services;
 using Backend.Services.Base;
+using Backend.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,18 +14,20 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     public class BookController : ControllerBase
     {
-        private readonly IServiceAsync<Book, BookDto> _repository;
+        private readonly BookService _bookService;
+        private readonly StorageService _storageService;
         
-        public BookController(IServiceAsync<Book, BookDto> repository)
+        public BookController(BookService bookService, StorageService storageService)
         {
-            _repository = repository;
+            _bookService = bookService;
+            _storageService = storageService;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<BookDto>> Get([FromQuery] PagedListQuery<Book> request)
         {
-            var result = await _repository.GetAsync(request);
+            var result = await _bookService.GetAsync(request);
             return Ok(result);
         }
 
@@ -32,7 +35,7 @@ namespace Backend.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> Fetch(int id)
         {
-            var result = await _repository.GetByIdAsync(id);
+            var result = await _bookService.GetByIdAsync(id);
             return Ok(result);
         }
         
@@ -40,7 +43,18 @@ namespace Backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Add(BookDto model)
         {
-            await _repository.AddAsync(model);
+            await _bookService.AddAsync(model);
+            return Ok();
+        }
+        
+        [HttpPost("image")]
+        //[Authorize(Roles = "Admin")]
+        [AllowAnonymous]
+        public async Task<ActionResult> UploadImage(PictureDto model)
+        {
+            var fileName = $"picture_{model.Id}";
+            await _storageService.UploadFileAsync(model.File, fileName);
+            await _bookService.UpdatePicturePath(model);
             return Ok();
         }
 
@@ -48,7 +62,7 @@ namespace Backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Update(BookDto model)
         {
-            await _repository.UpdateAsync(model);
+            await _bookService.UpdateAsync(model);
             return Ok();
         }
         
@@ -56,7 +70,7 @@ namespace Backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
-            await _repository.DeleteAsync(id);
+            await _bookService.DeleteAsync(id);
             return Ok();
         }
     }

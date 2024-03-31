@@ -10,6 +10,7 @@ namespace Backend.Models
         public required string Biography { get; set; }
         public DateTime? DateBirth { get; set; }
         public DateTime? DateDeath { get; set; }
+        public required string PicturePath { get; set; }
         
         public void Mapping(Profile profile)
         {

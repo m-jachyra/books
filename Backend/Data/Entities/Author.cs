@@ -11,6 +11,7 @@ namespace Backend.Data.Entities
         public string Biography { get; set; }
         public DateTime? DateBirth { get; set; }
         public DateTime? DateDeath { get; set; }
+        public string PicturePath { get; set; }
 
         public ICollection<Book> Books { get; } = new List<Book>();
         public static Expression<Func<Author, object>> GetSortProperty(string? sortColumn)=>

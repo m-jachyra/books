@@ -1,5 +1,7 @@
 using System.Text;
 using AutoMapper.Extensions.ExpressionMapping;
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Backend.Data;
 using Backend.Data.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -12,7 +14,7 @@ namespace Backend
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             var configuration = builder.Configuration;
@@ -60,6 +62,7 @@ namespace Backend
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddServices();
+            builder.Services.AddSingleton(x => new BlobServiceClient(configuration["AzureStorage:ConnectionString"]));
 
             var app = builder.Build();
 
