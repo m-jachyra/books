@@ -15,9 +15,9 @@ namespace Backend.Controllers
     public class BookController : ControllerBase
     {
         private readonly BookService _bookService;
-        private readonly StorageService _storageService;
+        private readonly IStorageService _storageService;
         
-        public BookController(BookService bookService, StorageService storageService)
+        public BookController(BookService bookService, IStorageService storageService)
         {
             _bookService = bookService;
             _storageService = storageService;
