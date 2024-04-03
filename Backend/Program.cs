@@ -92,16 +92,6 @@ namespace Backend
                 });
             });
             
-            builder.Services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(policy  =>
-                    {
-                        policy.WithOrigins(configuration["AllowedHosts"].Split(';'))
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
-                    });
-            });
-            
             builder.Services.AddServices();
             builder.Services.AddSingleton(x => new BlobServiceClient(configuration["AzureStorage:ConnectionString"]));
 
@@ -119,7 +109,6 @@ namespace Backend
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
