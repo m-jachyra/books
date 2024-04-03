@@ -17,22 +17,17 @@ namespace Backend.Controllers
     public class GenreController : ControllerBase
     {
         private readonly GenreService _genreService;
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
         
-        public GenreController(GenreService genreService, AppDbContext context, IMapper mapper)
+        public GenreController(GenreService genreService)
         {
             _genreService = genreService;
-            _context = context;
-            _mapper = mapper;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<GenreListDto>> Get([FromQuery] PagedListQuery<Genre> request)
         {
-            var test = Request.HttpContext.User.Claims;
-            var result = await _genreService.GetAsync(request);
+            var result = await _genreService.GetMappedPagedListAsync(request);
             return Ok(result);
         }
 

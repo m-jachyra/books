@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Backend.Data.Entities
 {
-    public class Book : IHasId, ISortable<Book>
+    public class Book : IHasId, ISortable<Book>, IHasPicture
     {
         public int Id { get; set; }
         public string Title { get; set; }

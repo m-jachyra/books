@@ -10,6 +10,7 @@ using Backend.Repositories;
 using Backend.Services.Base;
 using Elastic.Clients.Elasticsearch;
 using Microsoft.EntityFrameworkCore;
+using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 
 namespace Backend.Services
 {
@@ -28,93 +29,45 @@ namespace Backend.Services
         
         public async Task<List<ReviewListDto>> GetTopReviews(int userId)
         {
-           
-            var query = GetQueryable();
-
-            query = query
+            var query = Queryable
                 .OrderByDescending(x => x.UserReviewPluses.Count())
                 .Take(10);
             
-            var configuration = new MapperConfiguration(cfg => cfg.CreateProjection<Review, ReviewListDto>()
-                .ForMember(d => d.IsPlussed, o => o.MapFrom(s => s.UserReviewPluses.Any(x => x.UserId == userId))));
+            var configuration = GetConfiguration(userId);
             
-            var result = query.ProjectTo<ReviewListDto>(configuration);
-            return await result.ToListAsync();
+            return await GetMappedListAsync(query, configuration);
         }
 
-        public async Task<List<ReviewListDto>> GetTopReviews()
+        public async Task<List<ReviewListDto>> GetTopReviews(int? userId)
         {
-            var query = GetQueryable();
-
-            query = query
+            var query = Queryable
                 .OrderByDescending(x => x.UserReviewPluses.Count())
                 .Take(10);
             
-            return await GetAsync(query);
+            var configuration = GetConfiguration(userId);
+            
+            return await GetMappedListAsync(query, configuration);
         }
         
-        public async Task<PagedList<ReviewListDto>> GetByBookId(int id, PagedListQuery<Review> request, int userId)
+        public async Task<PagedList<ReviewListDto>> GetByBookId(int id, PagedListQuery<Review> request, int? userId)
         {
-            var query = GetQueryable();
+            var configuration = GetConfiguration(userId);
 
-            query = query.Where(x => x.BookId == id);
-            
-            if (request.SortOrder?.ToLower() == "desc")
-                query = query.OrderByDescending(Review.GetSortProperty(request.SortColumn));
-            else
-                query = query.OrderBy(Review.GetSortProperty(request.SortColumn));
-            
-            var configuration = new MapperConfiguration(cfg => cfg.CreateProjection<Review, ReviewListDto>()
-                .ForMember(d => d.IsPlussed, o => o.MapFrom(s => s.UserReviewPluses.Any(x => x.UserId == userId))));
-            
-            var result = query.ProjectTo<ReviewListDto>(configuration);
-            return await PagedList<ReviewListDto>.CreateAsync(result, request.Page, request.PageSize);
-        }
-        
-        public async Task<PagedList<ReviewListDto>> GetByBookId(int id, PagedListQuery<Review> request)
-        {
-            var query = GetQueryable();
-
-            query = query.Where(x => x.BookId == id);
-            
-            return await GetAsync(query, request);
+            return await GetMappedPagedListAsync(request, Queryable.Where(x => x.BookId == id), configuration);
         }
         
         public new async Task<PagedList<ReviewListDto>> GetAsync(PagedListQuery<Review> request, int userId)
         {
-            var query = GetQueryable();
-            
-            if (request.SortOrder?.ToLower() == "desc")
-                query = query.OrderByDescending(Review.GetSortProperty(request.SortColumn));
-            else
-                query = query.OrderBy(Review.GetSortProperty(request.SortColumn));
-            
-            var configuration = new MapperConfiguration(cfg => cfg.CreateProjection<Review, ReviewListDto>()
-                .ForMember(d => d.IsPlussed, o => o.MapFrom(s => s.UserReviewPluses.Any(x => x.UserId == userId))));
-            
-            var result = query.ProjectTo<ReviewListDto>(configuration);
-            return await PagedList<ReviewListDto>.CreateAsync(result, request.Page, request.PageSize);
+            var configuration = GetConfiguration(userId);
+
+            return await GetMappedPagedListAsync(request, Queryable, configuration);
         }
         
-        public new async Task<PagedList<ReviewListDto>> GetAsync(PagedListQuery<Review> request)
+        public async Task<ReviewDetailsDto> GetByIdAsync(int id, int userId)
         {
-            return await GetAsync(GetQueryable(), request);
-        }
-        
-        public new async Task<ReviewDetailsDto> GetByIdAsync(int id, int userId)
-        {
-            var query = GetQueryable();
+            var configuration = GetConfiguration(userId);
             
-            var configuration = new MapperConfiguration(cfg => cfg.CreateProjection<Review, ReviewDetailsDto>()
-                .ForMember(d => d.IsPlussed, o => o.MapFrom(s => s.UserReviewPluses.Any(x => x.UserId == userId))));
-            
-            var result = query.ProjectTo<ReviewDetailsDto>(configuration);
-            return await result.FirstOrDefaultAsync(x => x.Id == id);
-        }
-        
-        public new async Task<ReviewDetailsDto> GetByIdAsync(int id)
-        {
-            return await GetByIdAsync(GetQueryable(), id);
+            return await GetByIdAsync(id, Queryable, configuration);
         }
 
         public async Task AddPlus(int userId, int reviewId)
@@ -136,15 +89,6 @@ namespace Backend.Services
             _context.UserReviewPluses.Remove(plus);
             await _context.SaveChangesAsync();
         }
-        
-        private IQueryable<Review> GetQueryable()
-        {
-            var query = _repository.Entities;
-            
-            return query
-                .Include(x => x.UserReviewPluses)
-                .Include(x => x.User);
-        }
 
         public async Task AddAsync(ReviewUpdateDto model, int userId)
         {
@@ -161,5 +105,19 @@ namespace Backend.Services
             
             await _repository.UpdateAsync(entity);
         }
+        
+        // [Private]
+        private IConfigurationProvider GetConfiguration(int? userId)
+        {
+            return userId != null ?
+                new MapperConfiguration(cfg => cfg.CreateProjection<Review, ReviewListDto>()
+                    .ForMember(d => d.IsPlussed, o => o.MapFrom(s => s.UserReviewPluses.Any(x => x.UserId == userId)))) :
+                _mapper.ConfigurationProvider;
+        }
+        
+        private IQueryable<Review> Queryable =>
+            _repository.Entities
+                .Include(x => x.UserReviewPluses)
+                .Include(x => x.User);
     }
 }

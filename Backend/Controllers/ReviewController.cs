@@ -25,22 +25,14 @@ namespace Backend.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<ReviewListDto>> GetBookReviews([FromRoute] int id, [FromQuery] PagedListQuery<Review> request)
         {
-            var userId = User.Id();
-
-            return userId == null ? 
-                Ok(await _reviewService.GetByBookId(id, request)) : 
-                Ok(await _reviewService.GetByBookId(id, request, userId.Value));
+            return Ok(await _reviewService.GetByBookId(id, request, User.Id()));
         }
         
         [HttpGet("top")]
         [AllowAnonymous]
         public async Task<ActionResult<ReviewListDto>> GetTopReviews()
         {
-            var userId = User.Id();
-
-            return userId == null ? 
-                Ok(await _reviewService.GetTopReviews()) : 
-                Ok(await _reviewService.GetTopReviews(userId.Value));
+            return Ok(await _reviewService.GetTopReviews(User.Id()));
         }
         
         [HttpPost]

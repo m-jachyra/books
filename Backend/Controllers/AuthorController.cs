@@ -28,7 +28,7 @@ namespace Backend.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<AuthorListDto>> Get([FromQuery] PagedListQuery<Author> request)
         {
-            var result = await _authorService.GetAsync(request);
+            var result = await _authorService.GetMappedPagedListAsync(request);
             return Ok(result);
         }
 

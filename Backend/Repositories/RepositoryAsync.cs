@@ -26,14 +26,6 @@ namespace Backend.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public IQueryable<T> GetAll(Expression<Func<T, bool>>? expression = null)
-        {
-            var result = _context.Set<T>().AsNoTracking();
-            if (expression != null)
-                result = result.Where(expression);
-            return result;
-        }
-
         public async Task<T?> GetByIdAsync(int id)
         {
             return await _context.Set<T>().FindAsync(id);
@@ -51,6 +43,6 @@ namespace Backend.Repositories
             return await _context.Set<T>().FirstOrDefaultAsync(expression);
         }
 
-        public IQueryable<T> Entities => _context.Set<T>();
+        public IQueryable<T> Entities => _context.Set<T>().AsNoTracking();
     }
 }

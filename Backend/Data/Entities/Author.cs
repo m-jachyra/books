@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Backend.Data.Entities
 {
-    public class Author : IHasId, ISortable<Author>
+    public class Author : IHasId, ISortable<Author>, IHasPicture
     {
         public int Id { get; set; }
         [MaxLength(255)]

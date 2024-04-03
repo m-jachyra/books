@@ -6,6 +6,7 @@ using Backend.Helpers;
 using Backend.Models.Base;
 using Backend.Repositories;
 using Microsoft.EntityFrameworkCore;
+using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 
 namespace Backend.Services.Base
 {
@@ -33,47 +34,30 @@ namespace Backend.Services.Base
         {
             await _repository.DeleteAsync(await _repository.GetByIdAsync(id));
         }
-        
-        public async Task<PagedList<TListDto>> GetAsync(PagedListQuery<TEntity> request)
-        {
-            var query = _repository.GetAll();
-            
-            if (request.SortOrder?.ToLower() == "desc")
-                query = query.OrderByDescending(TEntity.GetSortProperty(request.SortColumn));
-            else
-                query = query.OrderBy(TEntity.GetSortProperty(request.SortColumn));
-            
-            var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
-            return await PagedList<TListDto>.CreateAsync(result, request.Page, request.PageSize);
-        }
 
-        public async Task<PagedList<TListDto>> GetAsync(IQueryable<TEntity> query, PagedListQuery<TEntity> request)
+        public async Task<PagedList<TListDto>> GetMappedPagedListAsync(PagedListQuery<TEntity> request, IQueryable<TEntity>? query = null, IConfigurationProvider? configurationProvider = null)
         {
+            query ??= _repository.Entities;
+            
             if (request.SortOrder?.ToLower() == "desc")
                 query = query.OrderByDescending(TEntity.GetSortProperty(request.SortColumn));
             else
                 query = query.OrderBy(TEntity.GetSortProperty(request.SortColumn));
             
-            var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
+            var result = query.ProjectTo<TListDto>(configurationProvider ?? _mapper.ConfigurationProvider);
             return await PagedList<TListDto>.CreateAsync(result, request.Page, request.PageSize);
         }
         
-        public async Task<List<TListDto>> GetAsync(IQueryable<TEntity> query)
+        public async Task<List<TListDto>> GetMappedListAsync(IQueryable<TEntity> query, IConfigurationProvider? configurationProvider = null)
         {
-            var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
+            var result = query.ProjectTo<TListDto>(configurationProvider ?? _mapper.ConfigurationProvider);
             return await result.ToListAsync();
         }
-
-        public async Task<TDetailsDto> GetByIdAsync(int id)
-        {
-            var query = _repository.Entities;
-            var result = query.ProjectTo<TDetailsDto>(_mapper.ConfigurationProvider);
-            return await result.FirstOrDefaultAsync(x => x.Id == id);
-        }
         
-        public async Task<TDetailsDto> GetByIdAsync(IQueryable<TEntity> query, int id)
+        public async Task<TDetailsDto> GetByIdAsync(int id, IQueryable<TEntity>? query = null, IConfigurationProvider? configurationProvider = null)
         {
-            var result = query.ProjectTo<TDetailsDto>(_mapper.ConfigurationProvider);
+            query ??= _repository.Entities;
+            var result = query.ProjectTo<TDetailsDto>(configurationProvider ?? _mapper.ConfigurationProvider);
             return await result.FirstOrDefaultAsync(x => x.Id == id);
         }
 
