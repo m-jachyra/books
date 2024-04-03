@@ -96,7 +96,9 @@ namespace Backend
             {
                 options.AddDefaultPolicy(policy  =>
                     {
-                        policy.WithOrigins(configuration["AllowedHosts"].Split(';'));
+                        policy.WithOrigins(configuration["AllowedHosts"].Split(';'))
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
                     });
             });
             
@@ -117,6 +119,7 @@ namespace Backend
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();
