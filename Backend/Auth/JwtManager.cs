@@ -2,10 +2,12 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Backend.Data;
 using Backend.Data.Entities;
 using Backend.Models;
 using Elastic.Clients.Elasticsearch.Requests;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Auth
@@ -14,21 +16,32 @@ namespace Backend.Auth
     {
         private readonly IConfiguration _configuration;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly AppDbContext _context;
         
-        public JwtManager(IConfiguration configuration, RoleManager<IdentityRole<int>> roleManager)
+        public JwtManager(IConfiguration configuration, RoleManager<IdentityRole<int>> roleManager, AppDbContext context)
         {
             _configuration = configuration;
             _roleManager = roleManager;
+            _context = context;
         }
         
-        public async Task<TokenDto> GenerateTokens(User user, IList<string> userRoles)
+        public async Task<TokenDto> GenerateTokensAsync(User user, IList<string> userRoles)
         {
-            return new TokenDto(await GenerateAccessToken(user, userRoles), GenerateRefreshToken());
+            return new TokenDto(await GenerateAccessToken(user, userRoles), await GenerateRefreshToken(user));
         }
         
-        public async Task<TokenDto> GenerateAccessTokenFromRefreshToken(User user, IList<string> userRoles, string refreshToken)
+        public async Task<TokenDto?> GenerateAccessTokenFromRefreshTokenAsync(User user, IList<string> userRoles, string refreshToken)
         {
-            return new TokenDto(await GenerateAccessToken(user, userRoles), refreshToken);
+            var token = await _context.UserRefreshTokens.FirstOrDefaultAsync(x => x.UserId == user.Id && x.DateExpireUtc > DateTime.UtcNow);
+
+            return token == null ? null : new TokenDto(await GenerateAccessToken(user, userRoles), refreshToken);
+        }
+
+        public async Task RemoveRefreshTokenAsync(User user)
+        {
+            var token = await _context.UserRefreshTokens.FirstOrDefaultAsync(x => x.UserId == user.Id && x.DateExpireUtc > DateTime.UtcNow);
+            _context.UserRefreshTokens.Remove(token);
+            await _context.SaveChangesAsync();
         }
 
         private async Task<string> GenerateAccessToken(User user, IList<string> userRoles)
@@ -50,9 +63,26 @@ namespace Backend.Auth
             return tokenHandler.WriteToken(token);
         }
         
-        private string GenerateRefreshToken()
+        private async Task<string> GenerateRefreshToken(User user)
         {
-            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+            var token = await _context.UserRefreshTokens.FirstOrDefaultAsync(x => x.UserId == user.Id);
+
+            if (token != null) return token.RefreshToken;
+            
+            var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            
+            var userRefreshToken = new UserRefreshToken
+            {
+                UserId = user.Id,
+                RefreshToken = refreshToken,
+                DateCreatedUtc = DateTime.UtcNow,
+                DateExpireUtc = DateTime.UtcNow.AddDays(7)
+            };
+
+            await _context.UserRefreshTokens.AddAsync(userRefreshToken);
+            await _context.SaveChangesAsync();
+
+            return refreshToken;
         }
         
         private async Task<List<Claim>> GetClaims(User user, IList<string> userRoles)
@@ -61,7 +91,7 @@ namespace Backend.Auth
             var claims = new List<Claim>
             {
                 new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new (JwtRegisteredClaimNames.Sub, user.UserName),
+                new (JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new (JwtRegisteredClaimNames.Email, user.Email),
                 new (identityOptions.ClaimsIdentity.UserIdClaimType, user.Id.ToString()),
                 new (identityOptions.ClaimsIdentity.UserNameClaimType, user.UserName)

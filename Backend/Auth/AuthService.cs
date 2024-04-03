@@ -1,17 +1,19 @@
 ﻿using System.Security.Claims;
+using Backend.Data;
 using Backend.Data.Entities;
 using Backend.Models;
+using Backend.Repositories;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Auth
 {
     public class AuthService
     {
-        private readonly UserManager<User?> _userManager;
+        private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly JwtManager _jwt;
         
-        public AuthService(UserManager<User?> userManager, SignInManager<User> signInManager, JwtManager jwt)
+        public AuthService(UserManager<User> userManager, SignInManager<User> signInManager, JwtManager jwt)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -46,19 +48,35 @@ namespace Backend.Auth
             var user = await _userManager.FindByEmailAsync(email);
             var userRoles = await _userManager.GetRolesAsync(user);
 
-            return await _jwt.GenerateTokens(user, userRoles);
+            return await _jwt.GenerateTokensAsync(user, userRoles);
+        }
+        
+        public async Task LogoutAsync(ClaimsPrincipal claimsPrincipal)
+        {
+            var user = await GetIdentityUser(claimsPrincipal);
+            
+            await _signInManager.SignOutAsync();
+            await _jwt.RemoveRefreshTokenAsync(user);
         }
 
         public async Task<TokenDto?> GenerateAccessTokenFromRefreshToken(ClaimsPrincipal claimsPrincipal, string refreshToken)
         {
-            var userId = claimsPrincipal.FindFirst("userid")?.Value;
+            var user = await GetIdentityUser(claimsPrincipal);
 
-            if (userId == null) return null;
+            if (user == null) return null;
             
-            var user = await _userManager.FindByIdAsync(userId);
             var userRoles = await _userManager.GetRolesAsync(user);
             
-            return await _jwt.GenerateAccessTokenFromRefreshToken(user, userRoles, refreshToken);
+            return await _jwt.GenerateAccessTokenFromRefreshTokenAsync(user, userRoles, refreshToken);
+        }
+
+        private async Task<User> GetIdentityUser(ClaimsPrincipal claimsPrincipal)
+        {
+           var email = claimsPrincipal.Identity.Name;
+           
+           if (email == null) return null;
+            
+           return await _userManager.FindByEmailAsync(email);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Backend.Controllers
         
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] LoginDto request)
+        public async Task<ActionResult> Login([FromBody] LoginDto request)
         {
             var result = await _authService.LoginAsync(request.Email, request.Password);
 
@@ -33,10 +33,19 @@ namespace Backend.Controllers
             
             return Ok(result);
         }
+        
+        [HttpPost("logout")]
+        [AllowAnonymous]
+        public async Task<ActionResult> Logout()
+        {
+            await _authService.LogoutAsync(User);
+            
+            return Ok();
+        }
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] LoginDto request)
+        public async Task<ActionResult> Register([FromBody] LoginDto request)
         {
             var result = await _authService.RegisterAsync(request.Email, request.Password);
 
@@ -45,9 +54,14 @@ namespace Backend.Controllers
         
         [HttpPost("refresh-token")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] TokenDto token)
+        public async Task<ActionResult> RefreshToken([FromBody] TokenDto token)
         {
-            return Ok(_authService.GenerateAccessTokenFromRefreshToken(User, token.RefreshToken));
+            var result = await _authService.GenerateAccessTokenFromRefreshToken(User, token.RefreshToken);
+
+            if (result == null)
+                return BadRequest();
+            
+            return Ok(result);
         }
     }
 }
