@@ -92,6 +92,14 @@ namespace Backend
                 });
             });
             
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy  =>
+                    {
+                        policy.WithOrigins(configuration["AllowedHosts"].Split(';'));
+                    });
+            });
+            
             builder.Services.AddServices();
             builder.Services.AddSingleton(x => new BlobServiceClient(configuration["AzureStorage:ConnectionString"]));
 
