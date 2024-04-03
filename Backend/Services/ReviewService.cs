@@ -25,21 +25,40 @@ namespace Backend.Services
 
         public async Task<List<ReviewListDto>> GetTopReviews()
         {
-            var query = _repository.Entities.Include(x => x.UserReviewPluses);
-            
-            var result = await query
+            var query = GetQueryable();
+
+            query = query
                 .OrderByDescending(x => x.UserReviewPluses.Count())
-                .ProjectTo<ReviewListDto>(_mapper.ConfigurationProvider)
-                .Take(10)
-                .ToListAsync();
+                .Take(10);
             
-            return result;
+            return await GetAsync(query);
         }
         public async Task<PagedList<ReviewListDto>> GetByBookId(int id, PagedListQuery<Review> request)
         {
-            var result = await GetAsync(review => review.BookId == id, request);
+            var query = GetQueryable();
 
-            return result;
+            query = query.Where(x => x.BookId == id);
+            
+            return await GetAsync(query, request);
+        }
+        
+        public new async Task<PagedList<ReviewListDto>> GetAsync(PagedListQuery<Review> request)
+        {
+            return await GetAsync(GetQueryable(), request);
+        }
+        
+        public new async Task<ReviewDetailsDto> GetByIdAsync(int id)
+        {
+            return await GetByIdAsync(GetQueryable(), id);
+        }
+        
+        private IQueryable<Review> GetQueryable()
+        {
+            var query = _repository.Entities;
+            
+            return query
+                .Include(x => x.UserReviewPluses)
+                .Include(x => x.User);
         }
     }
 }

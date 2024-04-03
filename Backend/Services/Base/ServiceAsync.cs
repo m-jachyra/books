@@ -5,6 +5,7 @@ using Backend.Data.Entities;
 using Backend.Helpers;
 using Backend.Models.Base;
 using Backend.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services.Base
 {
@@ -46,12 +47,8 @@ namespace Backend.Services.Base
             return await PagedList<TListDto>.CreateAsync(result, request.Page, request.PageSize);
         }
 
-        public async Task<PagedList<TListDto>> GetAsync(Expression<Func<TEntity, bool>>?expression, PagedListQuery<TEntity> request)
+        public async Task<PagedList<TListDto>> GetAsync(IQueryable<TEntity> query, PagedListQuery<TEntity> request)
         {
-            //var predicate = _mapper.Map<Expression<Func<TEntity, bool>>>(expression);
-
-            var query = _repository.GetAll(expression);
-            
             if (request.SortOrder?.ToLower() == "desc")
                 query = query.OrderByDescending(TEntity.GetSortProperty(request.SortColumn));
             else
@@ -60,11 +57,24 @@ namespace Backend.Services.Base
             var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
             return await PagedList<TListDto>.CreateAsync(result, request.Page, request.PageSize);
         }
+        
+        public async Task<List<TListDto>> GetAsync(IQueryable<TEntity> query)
+        {
+            var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
+            return await result.ToListAsync();
+        }
 
         public async Task<TDetailsDto> GetByIdAsync(int id)
         {
-            var entity = await _repository.GetByIdAsync(id);
-            return _mapper.Map<TDetailsDto>(entity);
+            var query = _repository.Entities;
+            var result = query.ProjectTo<TDetailsDto>(_mapper.ConfigurationProvider);
+            return await result.FirstOrDefaultAsync(x => x.Id == id);
+        }
+        
+        public async Task<TDetailsDto> GetByIdAsync(IQueryable<TEntity> query, int id)
+        {
+            var result = query.ProjectTo<TDetailsDto>(_mapper.ConfigurationProvider);
+            return await result.FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task UpdateAsync(TUpdateDto tDto)
