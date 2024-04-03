@@ -4,6 +4,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Backend.Data;
 using Backend.Data.Entities;
+using Backend.Helpers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -66,6 +67,11 @@ namespace Backend
 
             var app = builder.Build();
 
+            using(var scope = app.Services.CreateScope())
+            {
+                await CreateRolesHelper.CreateDefaultRoles(scope.ServiceProvider, configuration);
+            }
+            
             // Configure the HTTP request pipeline.
             app.UseSwagger();
             app.UseSwaggerUI();
