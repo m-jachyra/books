@@ -114,6 +114,8 @@ namespace Backend
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapGet("/", () => "Hello world");
             
             app.Run();
         }
