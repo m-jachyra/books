@@ -37,6 +37,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<GenreDetailsDto>> Fetch(int id)
         {
             var result = await _genreService.GetByIdAsync(id);
@@ -44,7 +45,7 @@ namespace Backend.Controllers
         }
         
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Add(GenreUpdateDto model)
         {
             await _genreService.AddAsync(model);

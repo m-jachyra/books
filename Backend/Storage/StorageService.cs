@@ -1,4 +1,6 @@
 ﻿using Azure.Storage.Blobs;
+using Backend.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Storage
 {
@@ -17,6 +19,22 @@ namespace Backend.Storage
             {
                 var blobClient = _containerClient.GetBlobClient(fileName);
                 var result = await blobClient.UploadAsync(file.OpenReadStream(), true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
+        public async Task DeleteFileAsync(string fileName)
+        {
+            if (fileName.IsNullOrEmpty()) return;
+            
+            try
+            {
+                var blobClient = _containerClient.GetBlobClient(fileName);
+                await blobClient.DeleteAsync();
             }
             catch (Exception e)
             {

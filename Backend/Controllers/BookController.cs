@@ -49,12 +49,10 @@ namespace Backend.Controllers
         }
         
         [HttpPost("image")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [AllowAnonymous]
         public async Task<ActionResult> UploadImage(PictureDto model)
         {
-            var fileName = $"picture_{model.Id}";
-            await _storageService.UploadFileAsync(model.File, fileName);
             await _bookService.UpdatePicturePath(model);
             return Ok();
         }

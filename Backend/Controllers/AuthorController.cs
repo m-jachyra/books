@@ -4,6 +4,7 @@ using Backend.Models;
 using Backend.Models.Author;
 using Backend.Services;
 using Backend.Services.Base;
+using Backend.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,10 +16,12 @@ namespace Backend.Controllers
     public class AuthorController : ControllerBase
     {
         private readonly AuthorService _authorService;
+        private readonly IStorageService _storageService;
         
-        public AuthorController(AuthorService authorService)
+        public AuthorController(AuthorService authorService, IStorageService storageService)
         {
             _authorService = authorService;
+            _storageService = storageService;
         }
 
         [HttpGet]
@@ -42,6 +45,15 @@ namespace Backend.Controllers
         public async Task<ActionResult> Add(AuthorUpdateDto model)
         {
             await _authorService.AddAsync(model);
+            return Ok();
+        }
+        
+        [HttpPost("image")]
+        [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
+        public async Task<ActionResult> UploadImage(PictureDto model)
+        {
+            await _authorService.UpdatePicturePath(model);
             return Ok();
         }
 
