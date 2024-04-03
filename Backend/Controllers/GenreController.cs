@@ -3,6 +3,7 @@ using Backend.Data;
 using Backend.Data.Entities;
 using Backend.Helpers;
 using Backend.Models;
+using Backend.Models.Genre;
 using Backend.Services;
 using Backend.Services.Base;
 using Microsoft.AspNetCore.Authorization;
@@ -15,11 +16,11 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     public class GenreController : ControllerBase
     {
-        private readonly IServiceAsync<Genre, GenreDto> _genreService;
+        private readonly GenreService _genreService;
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         
-        public GenreController(IServiceAsync<Genre, GenreDto> genreService, AppDbContext context, IMapper mapper)
+        public GenreController(GenreService genreService, AppDbContext context, IMapper mapper)
         {
             _genreService = genreService;
             _context = context;
@@ -28,22 +29,23 @@ namespace Backend.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<GenreDto>> Get([FromQuery] PagedListQuery<Genre> request)
+        public async Task<ActionResult<GenreListDto>> Get([FromQuery] PagedListQuery<Genre> request)
         {
+            var test = Request.HttpContext.User.Claims;
             var result = await _genreService.GetAsync(request);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult> Fetch(int id)
+        public async Task<ActionResult<GenreDetailsDto>> Fetch(int id)
         {
             var result = await _genreService.GetByIdAsync(id);
             return Ok(result);
         }
         
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Add(GenreDto model)
+        [Authorize]
+        public async Task<ActionResult> Add(GenreUpdateDto model)
         {
             await _genreService.AddAsync(model);
             return Ok();
@@ -51,7 +53,7 @@ namespace Backend.Controllers
 
         [HttpPut]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Update(GenreDto model)
+        public async Task<ActionResult> Update(GenreUpdateDto model)
         {
             await _genreService.UpdateAsync(model);
             return Ok();

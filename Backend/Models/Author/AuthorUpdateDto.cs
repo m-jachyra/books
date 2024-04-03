@@ -1,20 +1,19 @@
 ﻿using AutoMapper;
-using Backend.Data.Entities;
 using Backend.Models.Base;
 
-namespace Backend.Models
+namespace Backend.Models.Author
 {
-    public class AuthorDto : EntityDto, IMapFrom
+    public class AuthorUpdateDto : IUpdateDto, IMapFrom
     {
+        public required int Id { get; set; }
         public required string Name { get; set; }
-        public required string Biography { get; set; }
+        public string? Biography { get; set; }
         public DateTime? DateBirth { get; set; }
         public DateTime? DateDeath { get; set; }
-        public required string PicturePath { get; set; }
         
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<Author, AuthorDto>().ReverseMap();
+            profile.CreateMap<AuthorUpdateDto, Data.Entities.Author>();
         }
     }
 }

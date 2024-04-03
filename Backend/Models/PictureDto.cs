@@ -6,15 +6,15 @@ namespace Backend.Models
 {
     public class PictureDto : IMapFrom
     {
-        public int Id { get; set; }
-        public IFormFile File { get; set; }
+        public required int Id { get; set; }
+        public required IFormFile File { get; set; }
         
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<PictureDto, Book>()
+            profile.CreateMap<PictureDto, Data.Entities.Book>()
                 .ForMember(d => d.PicturePath, s => s.MapFrom(x => $"picture/author_{Id}"));
             
-            profile.CreateMap<PictureDto, Author>()
+            profile.CreateMap<PictureDto, Data.Entities.Author>()
                 .ForMember(d => d.PicturePath, s => s.MapFrom(x => $"picture/author_{Id}"));
         }
     }

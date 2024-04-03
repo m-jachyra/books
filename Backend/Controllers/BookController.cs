@@ -1,6 +1,7 @@
 ﻿using Backend.Data.Entities;
 using Backend.Helpers;
 using Backend.Models;
+using Backend.Models.Book;
 using Backend.Services;
 using Backend.Services.Base;
 using Backend.Storage;
@@ -25,7 +26,7 @@ namespace Backend.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<BookDto>> Get([FromQuery] PagedListQuery<Book> request)
+        public async Task<ActionResult<BookListDto>> Get([FromQuery] PagedListQuery<Book> request)
         {
             var result = await _bookService.GetAsync(request);
             return Ok(result);
@@ -33,7 +34,7 @@ namespace Backend.Controllers
 
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult> Fetch(int id)
+        public async Task<ActionResult<BookDetailsDto>> Fetch(int id)
         {
             var result = await _bookService.GetByIdAsync(id);
             return Ok(result);
@@ -41,7 +42,7 @@ namespace Backend.Controllers
         
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Add(BookDto model)
+        public async Task<ActionResult> Add(BookUpdateDto model)
         {
             await _bookService.AddAsync(model);
             return Ok();
@@ -60,7 +61,7 @@ namespace Backend.Controllers
 
         [HttpPut]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> Update(BookDto model)
+        public async Task<ActionResult> Update(BookUpdateDto model)
         {
             await _bookService.UpdateAsync(model);
             return Ok();

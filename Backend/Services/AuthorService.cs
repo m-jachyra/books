@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using Backend.Data.Entities;
 using Backend.Models;
+using Backend.Models.Author;
 using Backend.Repositories;
 using Backend.Services.Base;
 
 namespace Backend.Services
 {
-    public class AuthorService : ServiceAsync<Author, AuthorDto>, IPictureService
+    public class AuthorService : ServiceAsync<Author, AuthorListDto, AuthorDetailsDto, AuthorUpdateDto>
     {
         private readonly IRepositoryAsync<Author> _repository;
         private readonly IMapper _mapper;

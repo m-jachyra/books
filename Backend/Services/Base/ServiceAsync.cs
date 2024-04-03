@@ -8,8 +8,11 @@ using Backend.Repositories;
 
 namespace Backend.Services.Base
 {
-    public class ServiceAsync<TEntity, TDto> : IServiceAsync<TEntity, TDto>
-        where TDto : EntityDto where TEntity : class, IHasId, ISortable<TEntity>
+    public class ServiceAsync<TEntity, TListDto, TDetailsDto, TUpdateDto> : IServiceAsync<TEntity, TListDto, TDetailsDto, TUpdateDto>
+        where TEntity : class, IHasId, ISortable<TEntity>
+        where TListDto : IListDto
+        where TDetailsDto : IDetailsDto
+        where TUpdateDto : IUpdateDto
     {
         private readonly IRepositoryAsync<TEntity> _repository;
         private readonly IMapper _mapper;
@@ -19,7 +22,7 @@ namespace Backend.Services.Base
             _repository = repository;
             _mapper = mapper;
         }
-        public async Task AddAsync(TDto tDto)
+        public async Task AddAsync(TUpdateDto tDto)
         {
             var entity = _mapper.Map<TEntity>(tDto);
             await _repository.AddAsync(entity);
@@ -30,7 +33,7 @@ namespace Backend.Services.Base
             await _repository.DeleteAsync(await _repository.GetByIdAsync(id));
         }
         
-        public async Task<PagedList<TDto>> GetAsync(PagedListQuery<TEntity> request)
+        public async Task<PagedList<TListDto>> GetAsync(PagedListQuery<TEntity> request)
         {
             var query = _repository.GetAll();
             
@@ -39,42 +42,42 @@ namespace Backend.Services.Base
             else
                 query = query.OrderBy(TEntity.GetSortProperty(request.SortColumn));
             
-            var result = query.ProjectTo<TDto>(_mapper.ConfigurationProvider);
-            return await PagedList<TDto>.CreateAsync(result, request.Page, request.PageSize);
+            var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
+            return await PagedList<TListDto>.CreateAsync(result, request.Page, request.PageSize);
         }
 
-        public async Task<PagedList<TDto>> GetAsync(Expression<Func<TDto, bool>>?expression, PagedListQuery<TEntity> request)
+        public async Task<PagedList<TListDto>> GetAsync(Expression<Func<TEntity, bool>>?expression, PagedListQuery<TEntity> request)
         {
-            var predicate = _mapper.Map<Expression<Func<TEntity, bool>>>(expression);
+            //var predicate = _mapper.Map<Expression<Func<TEntity, bool>>>(expression);
 
-            var query = _repository.GetAll(predicate);
+            var query = _repository.GetAll(expression);
             
             if (request.SortOrder?.ToLower() == "desc")
                 query = query.OrderByDescending(TEntity.GetSortProperty(request.SortColumn));
             else
                 query = query.OrderBy(TEntity.GetSortProperty(request.SortColumn));
             
-            var result = query.ProjectTo<TDto>(_mapper.ConfigurationProvider);
-            return await PagedList<TDto>.CreateAsync(result, request.Page, request.PageSize);
+            var result = query.ProjectTo<TListDto>(_mapper.ConfigurationProvider);
+            return await PagedList<TListDto>.CreateAsync(result, request.Page, request.PageSize);
         }
 
-        public async Task<TDto> GetByIdAsync(int id)
+        public async Task<TDetailsDto> GetByIdAsync(int id)
         {
             var entity = await _repository.GetByIdAsync(id);
-            return _mapper.Map<TDto>(entity);
+            return _mapper.Map<TDetailsDto>(entity);
         }
 
-        public async Task UpdateAsync(TDto tDto)
+        public async Task UpdateAsync(TUpdateDto tDto)
         {
             var entity = _mapper.Map<TEntity>(tDto);
             await _repository.UpdateAsync(entity);
         }
 
-        public async Task<TDto> GetFirstAsync(Expression<Func<TDto, bool>> expression)
+        public async Task<TDetailsDto> GetFirstAsync(Expression<Func<TEntity, bool>> expression)
         {
             var predicate = _mapper.Map<Expression<Func<TEntity, bool>>>(expression);
             var entity = await _repository.GetFirstAsync(predicate);
-            return _mapper.Map<TDto>(entity);
+            return _mapper.Map<TDetailsDto>(entity);
         }
     }
 }

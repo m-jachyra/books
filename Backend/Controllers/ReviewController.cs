@@ -1,6 +1,7 @@
 ﻿using Backend.Data.Entities;
 using Backend.Helpers;
 using Backend.Models;
+using Backend.Models.Review;
 using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,16 +13,16 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     public class ReviewController : ControllerBase
     {
-        private readonly IReviewService _reviewService;
+        private readonly ReviewService _reviewService;
         
-        public ReviewController(IReviewService reviewService)
+        public ReviewController(ReviewService reviewService)
         {
             _reviewService = reviewService;
         }
         
         [HttpGet("book/{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<ReviewDto>> GetBookReviews([FromRoute] int id, [FromQuery] PagedListQuery<Review> request)
+        public async Task<ActionResult<ReviewListDto>> GetBookReviews([FromRoute] int id, [FromQuery] PagedListQuery<Review> request)
         {
             var result = await _reviewService.GetByBookId(id, request);
             return Ok(result);
@@ -29,21 +30,21 @@ namespace Backend.Controllers
         
         [HttpGet("top")]
         [AllowAnonymous]
-        public async Task<ActionResult<ReviewDto>> GetTopReviews()
+        public async Task<ActionResult<ReviewListDto>> GetTopReviews()
         {
             var result = await _reviewService.GetTopReviews();
             return Ok(result);
         }
         
         [HttpPost]
-        public async Task<ActionResult> Add(ReviewDto model)
+        public async Task<ActionResult> Add(ReviewUpdateDto model)
         {
             await _reviewService.AddAsync(model);
             return Ok();
         }
 
         [HttpPut]
-        public async Task<ActionResult> Update(ReviewDto model)
+        public async Task<ActionResult> Update(ReviewUpdateDto model)
         {
             await _reviewService.UpdateAsync(model);
             return Ok();

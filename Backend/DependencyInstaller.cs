@@ -11,12 +11,13 @@ namespace Backend
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
             services.AddTransient(typeof(IRepositoryAsync<>), typeof(RepositoryAsync<>));
-            services.AddTransient(typeof(IServiceAsync<,>), typeof(ServiceAsync<,>));
-            services.AddTransient<IReviewService, ReviewService>();
+            services.AddTransient(typeof(IServiceAsync<,,,>), typeof(ServiceAsync<,,,>));
+            services.AddTransient<ReviewService>();
             services.AddTransient<BookService>();
+            services.AddTransient<GenreService>();
             services.AddTransient<AuthorService>();
-            services.AddTransient<IAuthService, AuthService>();
-            services.AddTransient<IJwtManager, JwtManager>();
+            services.AddTransient<AuthService>();
+            services.AddTransient<JwtManager>();
             services.AddTransient<IStorageService, StorageService>();
 
             return services;

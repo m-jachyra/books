@@ -13,13 +13,11 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
-        private readonly IJwtManager _jwtManager;
+        private readonly AuthService _authService;
         
-        public AuthController(IAuthService authService, IJwtManager jwtManager)
+        public AuthController(AuthService authService)
         {
             _authService = authService;
-            _jwtManager = jwtManager;
         }
 
         public record LoginDto(string Email, string Password);
@@ -32,10 +30,8 @@ namespace Backend.Controllers
 
             if (result == null)
                 return BadRequest();
-
-            var tokens = _jwtManager.GenerateTokens(result);
             
-            return Ok(tokens);
+            return Ok(result);
         }
 
         [HttpPost("register")]
@@ -51,9 +47,7 @@ namespace Backend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] TokenDto token)
         {
-            var user = await _authService.GetCurrentUserAsync(User);
-            
-            return Ok(_jwtManager.GenerateAccessTokenFromRefreshToken(user, token.RefreshToken));
+            return Ok(_authService.GenerateAccessTokenFromRefreshToken(User, token.RefreshToken));
         }
     }
 }

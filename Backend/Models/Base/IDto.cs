@@ -1,6 +1,6 @@
 ﻿namespace Backend.Models.Base
 {
-    public class EntityDto
+    public interface IDto
     {
         public int Id { get; set; }
     }
