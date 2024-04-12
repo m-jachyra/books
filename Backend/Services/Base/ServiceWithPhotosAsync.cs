@@ -30,8 +30,8 @@ namespace Backend.Services.Base
             
             var fileName = $"picture_{model.Id}_{DateTime.UtcNow.ToString("ddMMyyyyhhmmss")}{Path.GetExtension(model.File.FileName)}";
             await _storageService.UploadFileAsync(model.File, fileName);
-            
-            entity.PicturePath = $"pictures/{typeof(TEntity).Name}_{model.Id}{Path.GetExtension(model.File.FileName)}";
+
+            entity.PicturePath = fileName;
             await _repository.UpdateAsync(entity);
         }
     }
