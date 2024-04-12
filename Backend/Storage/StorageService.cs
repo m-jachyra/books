@@ -34,7 +34,8 @@ namespace Backend.Storage
             try
             {
                 var blobClient = _containerClient.GetBlobClient(fileName);
-                await blobClient.DeleteAsync();
+                if (await blobClient.ExistsAsync())
+                    await blobClient.DeleteAsync();
             }
             catch (Exception e)
             {

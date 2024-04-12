@@ -28,7 +28,7 @@ namespace Backend.Services.Base
             
             await _storageService.DeleteFileAsync(entity.PicturePath);
             
-            var fileName = $"picture_{model.Id}_{DateTime.UtcNow})";
+            var fileName = $"picture_{model.Id}_{DateTime.UtcNow}";
             await _storageService.UploadFileAsync(model.File, fileName);
             
             entity.PicturePath = $"pictures/{typeof(TEntity).Name}_{model.Id}{Path.GetExtension(model.File.FileName)}";
