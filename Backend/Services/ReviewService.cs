@@ -111,6 +111,8 @@ namespace Backend.Services
         {
             return userId != null ?
                 new MapperConfiguration(cfg => cfg.CreateProjection<Review, ReviewListDto>()
+                    .ForMember(d => d.Preview, o => o.MapFrom(s => s.Content.Substring(0, 20)))
+                    .ForMember(d => d.PlusCount, o => o.MapFrom(s => s.UserReviewPluses.Count))
                     .ForMember(d => d.IsPlussed, o => o.MapFrom(s => s.UserReviewPluses.Any(x => x.UserId == userId)))) :
                 _mapper.ConfigurationProvider;
         }

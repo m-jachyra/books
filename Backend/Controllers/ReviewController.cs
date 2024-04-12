@@ -28,6 +28,13 @@ namespace Backend.Controllers
             return Ok(await _reviewService.GetByBookId(id, request, User.Id()));
         }
         
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ReviewListDto>> GetReview([FromRoute] int id, [FromQuery] PagedListQuery<Review> request)
+        {
+            return Ok(await _reviewService.GetByIdAsync(id));
+        }
+        
         [HttpGet("top")]
         [AllowAnonymous]
         public async Task<ActionResult<ReviewListDto>> GetTopReviews()
@@ -43,7 +50,7 @@ namespace Backend.Controllers
             return Ok();
         }
         
-        [HttpPost("book/{id}")]
+        [HttpPost("{id}/plus")]
         [Authorize]
         public async Task<ActionResult> AddPlus([FromRoute] int id)
         {
@@ -51,7 +58,7 @@ namespace Backend.Controllers
             return Ok();
         }
         
-        [HttpDelete("book/{id}")]
+        [HttpDelete("{id}/plus")]
         [Authorize]
         public async Task<ActionResult> RemovePlus([FromRoute] int id)
         {

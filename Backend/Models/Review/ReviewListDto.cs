@@ -16,7 +16,7 @@ namespace Backend.Models.Review
         public void Mapping(Profile profile)
         {
             profile.CreateMap<Data.Entities.Review, ReviewListDto>()
-                .ForMember(d => d.Preview, o => o.MapFrom(s => s.Content.Take(20)))
+                .ForMember(d => d.Preview, o => o.MapFrom(s => s.Content.Substring(0, 20)))
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.User.UserName))
                 .ForMember(d => d.PlusCount, o => o.MapFrom(s => s.UserReviewPluses.Count))
                 .ForMember(d => d.IsPlussed, o => o.Ignore());
